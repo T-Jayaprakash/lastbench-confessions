@@ -1,8 +1,12 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { FeedTabs } from "@/components/feed/FeedTabs";
 import { CreatePost } from "@/components/post/CreatePost";
 import { ProfileView } from "@/components/profile/ProfileView";
+import { CommentsModal } from "@/components/comments/CommentsModal";
+import { ShareModal } from "@/components/share/ShareModal";
+import { SearchBar } from "@/components/search/SearchBar";
+import { FeedSkeleton } from "@/components/ui/loading-skeletons";
 import { useToast } from "@/hooks/use-toast";
 
 // Mock data for demonstration
@@ -42,10 +46,57 @@ const mockPosts = [
 const Index = () => {
   const [activeTab, setActiveTab] = useState("home");
   const [posts, setPosts] = useState(mockPosts);
+  const [filteredPosts, setFilteredPosts] = useState(mockPosts);
   const [showCreatePost, setShowCreatePost] = useState(false);
+  const [showComments, setShowComments] = useState(false);
+  const [showShare, setShowShare] = useState(false);
+  const [selectedPostId, setSelectedPostId] = useState("");
   const [username, setUsername] = useState("Student#847");
   const [canChangeUsername, setCanChangeUsername] = useState(true);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [activeFilter, setActiveFilter] = useState("all");
+  const [isLoading, setIsLoading] = useState(false);
+  const [comments, setComments] = useState<Record<string, any[]>>({
+    "1": [
+      {
+        id: "c1",
+        content: "Relatable! I'm still googling basic concepts 😅",
+        author: "Student#123",
+        timeAgo: "1m ago",
+        likes: 5,
+        isLiked: false
+      }
+    ]
+  });
   const { toast } = useToast();
+
+  // Filter posts based on search and filters
+  useEffect(() => {
+    let filtered = posts;
+    
+    if (searchQuery) {
+      filtered = filtered.filter(post => 
+        post.content.toLowerCase().includes(searchQuery.toLowerCase()) ||
+        post.author.toLowerCase().includes(searchQuery.toLowerCase())
+      );
+    }
+    
+    switch (activeFilter) {
+      case "trending":
+        filtered = filtered.sort((a, b) => b.likes - a.likes);
+        break;
+      case "recent":
+        filtered = filtered.sort((a, b) => new Date(b.timeAgo).getTime() - new Date(a.timeAgo).getTime());
+        break;
+      case "dept":
+        filtered = filtered.filter(post => post.department === "Engineering");
+        break;
+      default:
+        break;
+    }
+    
+    setFilteredPosts(filtered);
+  }, [posts, searchQuery, activeFilter]);
 
   const handleTabChange = (tab: string) => {
     if (tab === "post") {
@@ -56,25 +107,31 @@ const Index = () => {
   };
 
   const handleCreatePost = (content: string, image?: File) => {
-    const newPost = {
-      id: Date.now().toString(),
-      content,
-      author: username,
-      timeAgo: "now",
-      likes: 0,
-      comments: 0,
-      isLiked: false,
-      department: "Engineering"
-    };
+    setIsLoading(true);
     
-    setPosts([newPost, ...posts]);
-    setShowCreatePost(false);
-    setActiveTab("home");
-    
-    toast({
-      title: "Posted successfully!",
-      description: "Your anonymous gossip is now live.",
-    });
+    // Simulate API call
+    setTimeout(() => {
+      const newPost = {
+        id: Date.now().toString(),
+        content,
+        author: username,
+        timeAgo: "now",
+        likes: 0,
+        comments: 0,
+        isLiked: false,
+        department: "Engineering"
+      };
+      
+      setPosts([newPost, ...posts]);
+      setShowCreatePost(false);
+      setActiveTab("home");
+      setIsLoading(false);
+      
+      toast({
+        title: "Posted successfully!",
+        description: "Your anonymous gossip is now live.",
+      });
+    }, 1000);
   };
 
   const handleLike = (id: string) => {
@@ -90,16 +147,58 @@ const Index = () => {
   };
 
   const handleComment = (id: string) => {
-    toast({
-      title: "Comments coming soon!",
-      description: "Real-time comments will be available once backend is connected.",
-    });
+    setSelectedPostId(id);
+    setShowComments(true);
   };
 
   const handleShare = (id: string) => {
+    setSelectedPostId(id);
+    setShowShare(true);
+  };
+
+  const handleAddComment = (postId: string, content: string) => {
+    const newComment = {
+      id: `c${Date.now()}`,
+      content,
+      author: username,
+      timeAgo: "now",
+      likes: 0,
+      isLiked: false
+    };
+    
+    setComments(prev => ({
+      ...prev,
+      [postId]: [...(prev[postId] || []), newComment]
+    }));
+    
+    // Update comment count in posts
+    setPosts(posts.map(post => 
+      post.id === postId 
+        ? { ...post, comments: post.comments + 1 }
+        : post
+    ));
+    
     toast({
-      title: "Share feature coming soon!",
-      description: "Share posts via WhatsApp, Instagram and more.",
+      title: "Comment added!",
+      description: "Your comment has been posted.",
+    });
+  };
+
+  const handleLikeComment = (commentId: string) => {
+    setComments(prev => {
+      const updated = { ...prev };
+      Object.keys(updated).forEach(postId => {
+        updated[postId] = updated[postId].map(comment =>
+          comment.id === commentId
+            ? {
+                ...comment,
+                isLiked: !comment.isLiked,
+                likes: comment.isLiked ? comment.likes - 1 : comment.likes + 1
+              }
+            : comment
+        );
+      });
+      return updated;
     });
   };
 
@@ -111,6 +210,16 @@ const Index = () => {
       description: "You can only change your username once.",
     });
   };
+
+  const handleSearch = (query: string) => {
+    setSearchQuery(query);
+  };
+
+  const handleFilterChange = (filter: string) => {
+    setActiveFilter(filter);
+  };
+
+  const selectedPost = posts.find(post => post.id === selectedPostId);
 
   return (
     <div className="min-h-screen bg-gradient-subtle">
@@ -126,26 +235,59 @@ const Index = () => {
       {/* Main Content */}
       <main className="pb-16">
         {activeTab === "home" && (
-          <FeedTabs
-            posts={posts}
-            userDepartment="Engineering"
-            onLike={handleLike}
-            onComment={handleComment}
-            onShare={handleShare}
-          />
+          <>
+            <SearchBar
+              onSearch={handleSearch}
+              onFilterChange={handleFilterChange}
+              activeFilter={activeFilter}
+            />
+            {isLoading ? (
+              <FeedSkeleton />
+            ) : (
+              <FeedTabs
+                posts={filteredPosts}
+                userDepartment="Engineering"
+                onLike={handleLike}
+                onComment={handleComment}
+                onShare={handleShare}
+              />
+            )}
+          </>
         )}
         
         {activeTab === "profile" && (
           <ProfileView
             username={username}
-            postsCount={1}
-            likesCount={67}
-            commentsCount={12}
+            postsCount={posts.filter(p => p.author === username).length}
+            likesCount={posts.filter(p => p.author === username).reduce((sum, p) => sum + p.likes, 0)}
+            commentsCount={Object.values(comments).flat().filter(c => c.author === username).length}
             onUsernameChange={handleUsernameChange}
             canChangeUsername={canChangeUsername}
           />
         )}
       </main>
+
+      {/* Comments Modal */}
+      {showComments && selectedPost && (
+        <CommentsModal
+          postId={selectedPostId}
+          isOpen={showComments}
+          onClose={() => setShowComments(false)}
+          comments={comments[selectedPostId] || []}
+          onAddComment={handleAddComment}
+          onLikeComment={handleLikeComment}
+        />
+      )}
+
+      {/* Share Modal */}
+      {showShare && selectedPost && (
+        <ShareModal
+          postId={selectedPostId}
+          postContent={selectedPost.content}
+          isOpen={showShare}
+          onClose={() => setShowShare(false)}
+        />
+      )}
 
       {/* Create Post Modal */}
       {showCreatePost && (
