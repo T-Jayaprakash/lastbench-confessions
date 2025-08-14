@@ -1,4 +1,6 @@
 import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+import { useAuth } from "@/contexts/AuthContext";
 import { BottomNav } from "@/components/layout/BottomNav";
 import { FeedTabs } from "@/components/feed/FeedTabs";
 import { CreatePost } from "@/components/post/CreatePost";
@@ -8,6 +10,8 @@ import { ShareModal } from "@/components/share/ShareModal";
 import { SearchBar } from "@/components/search/SearchBar";
 import { FeedSkeleton } from "@/components/ui/loading-skeletons";
 import { useToast } from "@/hooks/use-toast";
+import { Button } from "@/components/ui/button";
+import { LogOut } from "lucide-react";
 
 // Mock data for demonstration
 const mockPosts = [
@@ -44,6 +48,8 @@ const mockPosts = [
 ];
 
 const Index = () => {
+  const { user, loading: authLoading, signOut } = useAuth();
+  const navigate = useNavigate();
   const [activeTab, setActiveTab] = useState("home");
   const [posts, setPosts] = useState(mockPosts);
   const [filteredPosts, setFilteredPosts] = useState(mockPosts);
@@ -69,6 +75,23 @@ const Index = () => {
     ]
   });
   const { toast } = useToast();
+
+  // Redirect to auth if not logged in
+  useEffect(() => {
+    if (!authLoading && !user) {
+      navigate('/auth');
+    }
+  }, [user, authLoading, navigate]);
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return <FeedSkeleton />;
+  }
+
+  // Don't render anything if not authenticated (will redirect)
+  if (!user) {
+    return null;
+  }
 
   // Filter posts based on search and filters
   useEffect(() => {
@@ -225,10 +248,18 @@ const Index = () => {
     <div className="min-h-screen bg-gradient-subtle">
       {/* Header */}
       <header className="sticky top-0 z-40 bg-card/80 backdrop-blur-xl border-b border-border">
-        <div className="flex items-center justify-center h-16 px-4 max-w-md mx-auto">
+        <div className="flex items-center justify-between h-16 px-4 max-w-md mx-auto">
           <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Lastbench
           </h1>
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={signOut}
+            className="text-muted-foreground hover:text-foreground"
+          >
+            <LogOut className="w-4 h-4" />
+          </Button>
         </div>
       </header>
 
