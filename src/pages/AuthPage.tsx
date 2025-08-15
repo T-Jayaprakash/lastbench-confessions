@@ -38,7 +38,12 @@ const AuthPage = () => {
 
   useEffect(() => {
     fetchColleges();
-  }, []);
+    // Generate random username for signup
+    if (!isLogin && !anonymousName) {
+      const randomNumber = Math.floor(Math.random() * 9000) + 1000;
+      setAnonymousName(`Student#${randomNumber}`);
+    }
+  }, [isLogin]);
 
   useEffect(() => {
     if (selectedCollege) {
@@ -261,11 +266,14 @@ const AuthPage = () => {
                   <Input
                     id="anonymousName"
                     type="text"
-                    placeholder="e.g., CuriousStudent23"
+                    placeholder="e.g., Student#876"
                     value={anonymousName}
                     onChange={(e) => setAnonymousName(e.target.value)}
                     required
                   />
+                  <p className="text-xs text-muted-foreground">
+                    You can change this anytime later
+                  </p>
                 </div>
 
                 {/* Profile Picture Upload */}
