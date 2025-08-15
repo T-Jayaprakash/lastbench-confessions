@@ -1,5 +1,7 @@
-import { Heart, MessageCircle, Share } from "lucide-react";
+import { useState } from "react";
+import { Heart, MessageCircle, Share, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { cn } from "@/lib/utils";
 
 interface PostCardProps {
@@ -29,8 +31,11 @@ export const PostCard = ({
   onComment,
   onShare,
 }: PostCardProps) => {
+  const [showFullImage, setShowFullImage] = useState(false);
+
   return (
-    <article className="bg-gradient-card shadow-card rounded-2xl p-4 mb-4 mx-4 transition-smooth hover:shadow-glow">
+    <>
+      <article className="bg-gradient-card shadow-card rounded-2xl p-4 mb-4 mx-4 transition-smooth hover:shadow-glow">
       {/* Header */}
       <div className="flex items-center justify-between mb-3">
         <div className="flex items-center space-x-3">
@@ -50,12 +55,16 @@ export const PostCard = ({
       <div className="mb-4">
         <p className="text-foreground leading-relaxed">{content}</p>
         {image && (
-          <div className="mt-3 rounded-xl overflow-hidden">
+          <div 
+            className="mt-3 rounded-xl overflow-hidden cursor-pointer group"
+            onClick={() => setShowFullImage(true)}
+          >
             <img
               src={image}
               alt="Post content"
-              className="w-full h-auto object-cover"
+              className="w-full h-64 object-cover transition-smooth group-hover:scale-105"
             />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-smooth rounded-xl" />
           </div>
         )}
       </div>
@@ -102,5 +111,30 @@ export const PostCard = ({
         </Button>
       </div>
     </article>
+
+    {/* Full Screen Image Modal */}
+    {image && (
+      <Dialog open={showFullImage} onOpenChange={setShowFullImage}>
+        <DialogContent className="max-w-full h-full p-0 bg-black/95 border-0">
+          <div className="relative w-full h-full flex items-center justify-center">
+            <Button
+              variant="ghost"
+              size="sm"
+              onClick={() => setShowFullImage(false)}
+              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 rounded-full w-10 h-10 p-0"
+            >
+              <X size={24} />
+            </Button>
+            <img
+              src={image}
+              alt="Post content"
+              className="max-w-full max-h-full object-contain"
+              onClick={() => setShowFullImage(false)}
+            />
+          </div>
+        </DialogContent>
+      </Dialog>
+    )}
+    </>
   );
 };

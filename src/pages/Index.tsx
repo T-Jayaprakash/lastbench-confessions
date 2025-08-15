@@ -23,7 +23,8 @@ const mockPosts = [
     likes: 24,
     comments: 5,
     isLiked: false,
-    department: "Engineering"
+    department: "Engineering",
+    image: "https://images.unsplash.com/photo-1481627834876-b7833e8f5570?w=500&h=600&fit=crop"
   },
   {
     id: "2", 
@@ -43,7 +44,29 @@ const mockPosts = [
     likes: 156,
     comments: 23,
     isLiked: false,
-    department: "Engineering"
+    department: "Engineering",
+    image: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=500&h=600&fit=crop"
+  },
+  {
+    id: "4",
+    content: "Campus wifi is down again. Time to use mobile data like it's 2010 📱💸",
+    author: "Student#992",
+    timeAgo: "3h ago",
+    likes: 89,
+    comments: 18,
+    isLiked: false,
+    department: "Computer Science"
+  },
+  {
+    id: "5",
+    content: "Found someone's notes in the library. They have better handwriting than me and I'm jealous ✍️",
+    author: "Student#445",
+    timeAgo: "5h ago",
+    likes: 43,
+    comments: 7,
+    isLiked: true,
+    department: "Arts",
+    image: "https://images.unsplash.com/photo-1555431189-0fabf4d52a1c?w=500&h=600&fit=crop"
   }
 ];
 
