@@ -130,10 +130,12 @@ const AuthPage = () => {
       });
 
       if (error) {
-        toast.error(error.message);
+        toast.error(`Google login error: ${error.message}`);
+        console.error('Google auth error:', error);
       }
     } catch (error: any) {
-      toast.error(error.message);
+      toast.error(`Google login failed: ${error.message}`);
+      console.error('Google auth exception:', error);
     }
     setLoading(false);
   };
