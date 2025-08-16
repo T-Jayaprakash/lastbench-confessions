@@ -152,11 +152,12 @@ const Index = () => {
     }
   };
 
-  const handleCreatePost = (content: string, image?: File) => {
+  const handleCreatePost = (content: string, images?: File[]) => {
     setIsLoading(true);
     
     // Simulate API call
     setTimeout(() => {
+      const imageUrls = (images || []).map((file) => URL.createObjectURL(file));
       const newPost = {
         id: Date.now().toString(),
         content,
@@ -165,7 +166,8 @@ const Index = () => {
         likes: 0,
         comments: 0,
         isLiked: false,
-        department: "Engineering"
+        department: "Engineering",
+        images: imageUrls,
       };
       
       setPosts([newPost, ...posts]);
@@ -175,7 +177,7 @@ const Index = () => {
       
       toast({
         title: "Posted successfully!",
-        description: "Your anonymous gossip is now live.",
+        description: "Your post is now live.",
       });
     }, 1000);
   };

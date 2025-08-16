@@ -35,7 +35,7 @@ export const SearchBar = ({ onSearch, onFilterChange, activeFilter }: SearchBarP
         <Input
           value={searchQuery}
           onChange={(e) => handleSearch(e.target.value)}
-          placeholder="Search gossips..."
+          placeholder="Search posts..."
           className="pl-10 pr-12 bg-background/50 border-border/50 focus:border-primary rounded-full"
         />
         <Button

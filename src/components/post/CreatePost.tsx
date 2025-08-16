@@ -6,38 +6,40 @@ import { ImagePlus, Send, X } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface CreatePostProps {
-  onPost: (content: string, image?: File) => void;
+  onPost: (content: string, images?: File[]) => void;
   onCancel: () => void;
 }
 
 export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
   const [content, setContent] = useState("");
-  const [selectedImage, setSelectedImage] = useState<File | null>(null);
-  const [imagePreview, setImagePreview] = useState<string | null>(null);
+  const [selectedImages, setSelectedImages] = useState<File[]>([]);
+  const [imagePreviews, setImagePreviews] = useState<string[]>([]);
   
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      setSelectedImage(file);
-      const reader = new FileReader();
-      reader.onload = (e) => {
-        setImagePreview(e.target?.result as string);
-      };
-      reader.readAsDataURL(file);
+    const files = Array.from(event.target.files || []);
+    if (files.length) {
+      setSelectedImages(prev => [...prev, ...files]);
+      files.forEach((file) => {
+        const reader = new FileReader();
+        reader.onload = (e) => {
+          setImagePreviews(prev => [...prev, e.target?.result as string]);
+        };
+        reader.readAsDataURL(file);
+      });
     }
   };
 
-  const handleRemoveImage = () => {
-    setSelectedImage(null);
-    setImagePreview(null);
+  const handleRemoveImage = (index: number) => {
+    setSelectedImages((prev) => prev.filter((_, i) => i !== index));
+    setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
   const handleSubmit = () => {
     if (content.trim()) {
-      onPost(content, selectedImage || undefined);
+      onPost(content, selectedImages.length ? selectedImages : undefined);
       setContent("");
-      setSelectedImage(null);
-      setImagePreview(null);
+      setSelectedImages([]);
+      setImagePreviews([]);
     }
   };
 
@@ -46,7 +48,7 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
       <Card className="w-full max-w-md bg-gradient-card shadow-glow border-border/50">
         <CardHeader className="pb-4">
           <CardTitle className="flex items-center justify-between">
-            <span className="text-foreground">Share Gossip</span>
+            <span className="text-foreground">Create Post</span>
             <Button
               variant="ghost"
               size="sm"
@@ -62,7 +64,7 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
           <Textarea
             value={content}
             onChange={(e) => setContent(e.target.value)}
-            placeholder="What's the gossip? Share anonymously..."
+            placeholder="Share something with your campus..."
             className="min-h-32 resize-none bg-background/50 border-border/50 focus:border-primary text-foreground placeholder:text-muted-foreground"
             maxLength={500}
           />
@@ -71,21 +73,25 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
             {content.length}/500
           </div>
 
-          {imagePreview && (
-            <div className="relative">
-              <img
-                src={imagePreview}
-                alt="Preview"
-                className="w-full h-48 object-cover rounded-xl"
-              />
-              <Button
-                variant="destructive"
-                size="sm"
-                onClick={handleRemoveImage}
-                className="absolute top-2 right-2 p-2 rounded-full"
-              >
-                <X size={16} />
-              </Button>
+          {imagePreviews.length > 0 && (
+            <div className="grid grid-cols-2 gap-3">
+              {imagePreviews.map((src, index) => (
+                <div key={index} className="relative">
+                  <img
+                    src={src}
+                    alt={`Preview ${index + 1}`}
+                    className="w-full h-40 object-cover rounded-xl"
+                  />
+                  <Button
+                    variant="destructive"
+                    size="sm"
+                    onClick={() => handleRemoveImage(index)}
+                    className="absolute top-2 right-2 p-2 rounded-full"
+                  >
+                    <X size={16} />
+                  </Button>
+                </div>
+              ))}
             </div>
           )}
 
@@ -95,6 +101,7 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
                 type="file"
                 id="image-upload"
                 accept="image/*"
+                multiple
                 onChange={handleImageSelect}
                 className="hidden"
               />
@@ -104,7 +111,7 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
                   size="sm"
                   className={cn(
                     "flex items-center space-x-2 rounded-full tap-effect",
-                    selectedImage && "text-primary"
+                    selectedImages.length > 0 && "text-primary"
                   )}
                   asChild
                 >

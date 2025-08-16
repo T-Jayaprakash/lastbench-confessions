@@ -1,9 +1,7 @@
-import { useState } from "react";
-import { Heart, MessageCircle, Share, X } from "lucide-react";
+import { Heart, MessageCircle, Share } from "lucide-react";
 import { Button } from "@/components/ui/button";
-import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Carousel, CarouselContent, CarouselItem } from "@/components/ui/carousel";
 import { cn } from "@/lib/utils";
-
 interface PostCardProps {
   id: string;
   content: string;
@@ -13,6 +11,7 @@ interface PostCardProps {
   comments: number;
   isLiked: boolean;
   image?: string;
+  images?: string[];
   onLike: (id: string) => void;
   onComment: (id: string) => void;
   onShare: (id: string) => void;
@@ -27,11 +26,12 @@ export const PostCard = ({
   comments,
   isLiked,
   image,
+  images,
   onLike,
   onComment,
   onShare,
 }: PostCardProps) => {
-  const [showFullImage, setShowFullImage] = useState(false);
+  
 
   return (
     <>
@@ -54,19 +54,36 @@ export const PostCard = ({
       {/* Content */}
       <div className="mb-4">
         <p className="text-foreground leading-relaxed">{content}</p>
-        {image && (
+        {(Array.isArray(images) && images.length > 0) ? (
+          <div className="mt-3 rounded-xl overflow-hidden">
+            <Carousel opts={{ align: "start", loop: false }}>
+              <CarouselContent>
+                {images.map((src, idx) => (
+                  <CarouselItem key={idx}>
+                    <img
+                      src={src}
+                      alt={`Post image ${idx + 1}`}
+                      className="w-full h-64 object-cover"
+                      loading="lazy"
+                    />
+                  </CarouselItem>
+                ))}
+              </CarouselContent>
+            </Carousel>
+          </div>
+        ) : (image && (
           <div 
-            className="mt-3 rounded-xl overflow-hidden cursor-pointer group"
-            onClick={() => setShowFullImage(true)}
+            className="mt-3 rounded-xl overflow-hidden relative group"
           >
             <img
               src={image}
-              alt="Post content"
+              alt="Post image"
               className="w-full h-64 object-cover transition-smooth group-hover:scale-105"
+              loading="lazy"
             />
-            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-smooth rounded-xl" />
+            <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-smooth rounded-xl pointer-events-none" />
           </div>
-        )}
+        ))}
       </div>
 
       {/* Actions */}
@@ -112,29 +129,6 @@ export const PostCard = ({
       </div>
     </article>
 
-    {/* Full Screen Image Modal */}
-    {image && (
-      <Dialog open={showFullImage} onOpenChange={setShowFullImage}>
-        <DialogContent className="max-w-full h-full p-0 bg-black/95 border-0">
-          <div className="relative w-full h-full flex items-center justify-center">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowFullImage(false)}
-              className="absolute top-4 right-4 z-50 text-white hover:bg-white/20 rounded-full w-10 h-10 p-0"
-            >
-              <X size={24} />
-            </Button>
-            <img
-              src={image}
-              alt="Post content"
-              className="max-w-full max-h-full object-contain"
-              onClick={() => setShowFullImage(false)}
-            />
-          </div>
-        </DialogContent>
-      </Dialog>
-    )}
     </>
   );
 };

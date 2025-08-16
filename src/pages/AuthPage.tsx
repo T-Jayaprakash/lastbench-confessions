@@ -206,7 +206,8 @@ const AuthPage = () => {
             console.error('Profile creation error:', profileError);
             toast.error('Account created but profile setup failed');
           } else {
-            toast.success('Account created! Please check your email to confirm.');
+            toast.success('Account created! Redirecting to home...');
+            navigate('/');
           }
         }
       }

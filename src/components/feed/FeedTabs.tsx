@@ -13,6 +13,7 @@ interface Post {
   comments: number;
   isLiked: boolean;
   image?: string;
+  images?: string[];
   department?: string;
 }
 
@@ -116,9 +117,9 @@ export const FeedTabs = ({
                   ))
                 ) : (
                   <div className="text-center py-12 px-4">
-                    <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-primary">
-                      <tab.icon size={24} className="text-white" />
-                    </div>
+                  <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-primary">
+                    {(() => { const EmptyIcon = tab.icon; return <EmptyIcon size={24} className="text-white" />; })()}
+                  </div>
                     <p className="text-muted-foreground">{tab.emptyMessage}</p>
                   </div>
                 )}
