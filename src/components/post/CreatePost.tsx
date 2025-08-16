@@ -1,19 +1,59 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { ImagePlus, Send, X } from "lucide-react";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Label } from "@/components/ui/label";
+import { ImagePlus, Send, X, Globe, Building2 } from "lucide-react";
+import { supabase } from "@/integrations/supabase/client";
+import { useAuth } from "@/contexts/AuthContext";
 import { cn } from "@/lib/utils";
 
 interface CreatePostProps {
-  onPost: (content: string, images?: File[]) => void;
+  onPost: (content: string, images?: File[], isCollegeWide?: boolean, departmentId?: string) => void;
   onCancel: () => void;
 }
 
 export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
+  const { user } = useAuth();
   const [content, setContent] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
+  const [isCollegeWide, setIsCollegeWide] = useState(false);
+  const [departments, setDepartments] = useState<any[]>([]);
+  const [selectedDepartment, setSelectedDepartment] = useState("");
+  const [userProfile, setUserProfile] = useState<any>(null);
+
+  useEffect(() => {
+    if (user) {
+      loadUserProfile();
+    }
+  }, [user]);
+
+  const loadUserProfile = async () => {
+    try {
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('*, departments(id, name)')
+        .eq('user_id', user?.id)
+        .single();
+
+      if (profile) {
+        setUserProfile(profile);
+        // Load departments from the same college
+        const { data: depts } = await supabase
+          .from('departments')
+          .select('*')
+          .eq('college_id', profile.college_id)
+          .order('name');
+        
+        setDepartments(depts || []);
+        setSelectedDepartment(profile.department_id);
+      }
+    } catch (error) {
+      console.error('Error loading profile:', error);
+    }
+  };
   
   const handleImageSelect = (event: React.ChangeEvent<HTMLInputElement>) => {
     const files = Array.from(event.target.files || []);
@@ -36,10 +76,17 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
 
   const handleSubmit = () => {
     if (content.trim()) {
-      onPost(content, selectedImages.length ? selectedImages : undefined);
+      onPost(
+        content, 
+        selectedImages.length ? selectedImages : undefined,
+        isCollegeWide,
+        isCollegeWide ? undefined : selectedDepartment
+      );
       setContent("");
       setSelectedImages([]);
       setImagePreviews([]);
+      setIsCollegeWide(false);
+      setSelectedDepartment(userProfile?.department_id || "");
     }
   };
 
@@ -71,6 +118,55 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
           
           <div className="text-right text-sm text-muted-foreground">
             {content.length}/500
+          </div>
+
+          {/* Audience Selection */}
+          <div className="space-y-3 p-4 bg-background/30 rounded-xl border border-border/50">
+            <Label className="text-foreground font-medium">Post Audience</Label>
+            
+            <div className="grid grid-cols-2 gap-3">
+              <Button
+                variant={isCollegeWide ? "default" : "outline"}
+                onClick={() => setIsCollegeWide(true)}
+                className={cn(
+                  "flex flex-col items-center space-y-2 h-auto py-3",
+                  isCollegeWide && "bg-gradient-primary text-white"
+                )}
+              >
+                <Globe size={20} />
+                <span className="text-sm">Entire College</span>
+              </Button>
+              
+              <Button
+                variant={!isCollegeWide ? "default" : "outline"}
+                onClick={() => setIsCollegeWide(false)}
+                className={cn(
+                  "flex flex-col items-center space-y-2 h-auto py-3",
+                  !isCollegeWide && "bg-gradient-primary text-white"
+                )}
+              >
+                <Building2 size={20} />
+                <span className="text-sm">My Department</span>
+              </Button>
+            </div>
+
+            {!isCollegeWide && departments.length > 0 && (
+              <div className="space-y-2">
+                <Label className="text-sm text-muted-foreground">Select Department</Label>
+                <Select value={selectedDepartment} onValueChange={setSelectedDepartment}>
+                  <SelectTrigger className="bg-background/50 border-border/50">
+                    <SelectValue placeholder="Choose department" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {departments.map((dept) => (
+                      <SelectItem key={dept.id} value={dept.id}>
+                        {dept.name}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            )}
           </div>
 
           {imagePreviews.length > 0 && (

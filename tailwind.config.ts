@@ -141,6 +141,14 @@ export default {
 					'50%': { transform: 'scale(1.05)' },
 					'70%': { transform: 'scale(0.9)' },
 					'100%': { transform: 'scale(1)', opacity: '1' }
+				},
+				'float': {
+					'0%, 100%': { transform: 'translateY(0px)' },
+					'50%': { transform: 'translateY(-10px)' }
+				},
+				'glow': {
+					'0%': { filter: 'brightness(1)' },
+					'100%': { filter: 'brightness(1.2)' }
 				}
 			},
 			animation: {
@@ -154,10 +162,34 @@ export default {
 				'slide-out-right': 'slide-out-right 0.3s ease-out',
 				'slide-up': 'slide-up 0.4s cubic-bezier(0.4, 0, 0.2, 1)',
 				'bounce-in': 'bounce-in 0.5s cubic-bezier(0.68, -0.55, 0.265, 1.55)',
+				'float': 'float 3s ease-in-out infinite',
+				'glow': 'glow 2s ease-in-out infinite alternate',
 				'enter': 'fade-in 0.3s ease-out',
 				'exit': 'fade-out 0.3s ease-out'
 			}
 		}
 	},
-	plugins: [require("tailwindcss-animate")],
+	plugins: [
+		require("tailwindcss-animate"),
+		function({ addUtilities }: any) {
+			addUtilities({
+				'.tap-effect': {
+					'@apply active:scale-95 transition-transform duration-100': {}
+				},
+				'.card-hover': {
+					'@apply hover:shadow-glow hover:-translate-y-1 transition-all duration-300': {}
+				},
+				'.transition-bounce': {
+					'transition': 'all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55)'
+				},
+				'.scrollbar-hide': {
+					'-ms-overflow-style': 'none',
+					'scrollbar-width': 'none',
+					'&::-webkit-scrollbar': {
+						display: 'none'
+					}
+				}
+			});
+		}
+	],
 } satisfies Config;

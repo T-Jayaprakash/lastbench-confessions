@@ -51,8 +51,10 @@
     --shadow-card: 0 4px 20px -4px hsl(220 13% 5% / 0.5);
     --shadow-glow: 0 0 30px hsl(var(--primary-glow) / 0.2);
 
-    /* Animations */
-    --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  /* Animations */
+  --transition-smooth: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  --transition-bounce: all 0.2s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+  --transition-gentle: all 0.4s cubic-bezier(0.23, 1, 0.32, 1);
     --transition-bounce: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
   }
 }

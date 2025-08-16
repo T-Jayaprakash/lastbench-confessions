@@ -5,6 +5,7 @@ import { BottomNav } from "@/components/layout/BottomNav";
 import { FeedTabs } from "@/components/feed/FeedTabs";
 import { CreatePost } from "@/components/post/CreatePost";
 import { ProfileView } from "@/components/profile/ProfileView";
+import { SettingsView } from "@/components/settings/SettingsView";
 import { CommentsModal } from "@/components/comments/CommentsModal";
 import { ShareModal } from "@/components/share/ShareModal";
 import { SearchBar } from "@/components/search/SearchBar";
@@ -152,10 +153,10 @@ const Index = () => {
     }
   };
 
-  const handleCreatePost = (content: string, images?: File[]) => {
+  const handleCreatePost = (content: string, images?: File[], isCollegeWide?: boolean, departmentId?: string) => {
     setIsLoading(true);
     
-    // Simulate API call
+    // Simulate API call with department/college awareness
     setTimeout(() => {
       const imageUrls = (images || []).map((file) => URL.createObjectURL(file));
       const newPost = {
@@ -166,8 +167,10 @@ const Index = () => {
         likes: 0,
         comments: 0,
         isLiked: false,
-        department: "Engineering",
+        department: isCollegeWide ? "All Departments" : "Engineering",
         images: imageUrls,
+        isCollegeWide: isCollegeWide || false,
+        departmentId: departmentId,
       };
       
       setPosts([newPost, ...posts]);
@@ -177,7 +180,7 @@ const Index = () => {
       
       toast({
         title: "Posted successfully!",
-        description: "Your post is now live.",
+        description: `Your post is now live ${isCollegeWide ? 'college-wide' : 'in your department'}!`,
       });
     }, 1000);
   };
@@ -321,6 +324,8 @@ const Index = () => {
             canChangeUsername={canChangeUsername}
           />
         )}
+
+        {activeTab === "settings" && <SettingsView />}
       </main>
 
       {/* Comments Modal */}

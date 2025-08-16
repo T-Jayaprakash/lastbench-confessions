@@ -1,4 +1,4 @@
-import { Home, Plus, User } from "lucide-react";
+import { Home, Plus, User, Settings } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
@@ -11,11 +11,12 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
     { id: "home", icon: Home, label: "Home" },
     { id: "post", icon: Plus, label: "Post" },
     { id: "profile", icon: User, label: "Profile" },
+    { id: "settings", icon: Settings, label: "Settings" },
   ];
 
   return (
     <nav className="fixed bottom-0 left-0 right-0 bg-card/90 backdrop-blur-xl border-t border-border z-50">
-      <div className="flex items-center justify-around h-16 max-w-md mx-auto px-4">
+      <div className="flex items-center justify-between h-16 max-w-md mx-auto px-2">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
