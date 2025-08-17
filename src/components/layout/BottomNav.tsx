@@ -1,4 +1,4 @@
-import { Home, Plus, User, Settings } from "lucide-react";
+import { Home, Plus, User } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface BottomNavProps {
@@ -11,7 +11,6 @@ export const BottomNav = ({ activeTab, onTabChange }: BottomNavProps) => {
     { id: "home", icon: Home, label: "Home" },
     { id: "post", icon: Plus, label: "Post" },
     { id: "profile", icon: User, label: "Profile" },
-    { id: "settings", icon: Settings, label: "Settings" },
   ];
 
   return (

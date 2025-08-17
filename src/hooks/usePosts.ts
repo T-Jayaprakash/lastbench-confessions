@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
+import { useImageUpload } from '@/hooks/useImageUpload';
 
 export interface Post {
   id: string;
@@ -23,6 +24,7 @@ export interface Post {
 export const usePosts = () => {
   const { user } = useAuth();
   const { toast } = useToast();
+  const { uploadImages, isUploading } = useImageUpload();
   const [posts, setPosts] = useState<Post[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -63,7 +65,7 @@ export const usePosts = () => {
 
   const createPost = async (
     content: string, 
-    images: string[] = [], 
+    images?: File[], 
     isCollegeWide: boolean = false, 
     departmentId?: string
   ) => {
@@ -86,12 +88,18 @@ export const usePosts = () => {
         return;
       }
 
+      // Upload images if provided
+      let imageUrls: string[] = [];
+      if (images && images.length > 0) {
+        imageUrls = await uploadImages(images, user.id);
+      }
+
       const { error } = await supabase
         .from('posts')
         .insert({
           user_id: user.id,
           content,
-          images,
+          images: imageUrls.length > 0 ? imageUrls : null,
           college_id: profile.college_id,
           department_id: isCollegeWide ? null : (departmentId || profile.department_id),
           is_college_wide: isCollegeWide,
@@ -176,5 +184,6 @@ export const usePosts = () => {
     loadPosts,
     createPost,
     toggleLike,
+    isUploading,
   };
 };

@@ -280,14 +280,6 @@ const Index = () => {
           <h1 className="text-2xl font-bold bg-gradient-primary bg-clip-text text-transparent">
             Lastbench
           </h1>
-          <Button
-            variant="ghost"
-            size="sm"
-            onClick={signOut}
-            className="text-muted-foreground hover:text-foreground"
-          >
-            <LogOut className="w-4 h-4" />
-          </Button>
         </div>
       </header>
 
@@ -325,7 +317,7 @@ const Index = () => {
           />
         )}
 
-        {activeTab === "settings" && <SettingsView />}
+        
       </main>
 
       {/* Comments Modal */}
@@ -353,7 +345,6 @@ const Index = () => {
       {/* Create Post Modal */}
       {showCreatePost && (
         <CreatePost
-          onPost={handleCreatePost}
           onCancel={() => setShowCreatePost(false)}
         />
       )}

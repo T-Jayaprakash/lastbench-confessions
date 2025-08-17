@@ -7,15 +7,16 @@ import { Label } from "@/components/ui/label";
 import { ImagePlus, Send, X, Globe, Building2 } from "lucide-react";
 import { supabase } from "@/integrations/supabase/client";
 import { useAuth } from "@/contexts/AuthContext";
+import { usePosts } from "@/hooks/usePosts";
 import { cn } from "@/lib/utils";
 
 interface CreatePostProps {
-  onPost: (content: string, images?: File[], isCollegeWide?: boolean, departmentId?: string) => void;
   onCancel: () => void;
 }
 
-export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
+export const CreatePost = ({ onCancel }: CreatePostProps) => {
   const { user } = useAuth();
+  const { createPost, isUploading } = usePosts();
   const [content, setContent] = useState("");
   const [selectedImages, setSelectedImages] = useState<File[]>([]);
   const [imagePreviews, setImagePreviews] = useState<string[]>([]);
@@ -74,9 +75,9 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
     setImagePreviews((prev) => prev.filter((_, i) => i !== index));
   };
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (content.trim()) {
-      onPost(
+      await createPost(
         content, 
         selectedImages.length ? selectedImages : undefined,
         isCollegeWide,
@@ -87,6 +88,7 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
       setImagePreviews([]);
       setIsCollegeWide(false);
       setSelectedDepartment(userProfile?.department_id || "");
+      onCancel();
     }
   };
 
@@ -221,11 +223,11 @@ export const CreatePost = ({ onPost, onCancel }: CreatePostProps) => {
 
             <Button
               onClick={handleSubmit}
-              disabled={!content.trim()}
+              disabled={!content.trim() || isUploading}
               className="bg-gradient-primary hover:opacity-90 text-white px-6 rounded-full shadow-primary transition-bounce tap-effect disabled:opacity-50"
             >
               <Send size={18} className="mr-2" />
-              Post
+              {isUploading ? 'Posting...' : 'Post'}
             </Button>
           </div>
         </CardContent>

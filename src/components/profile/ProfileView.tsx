@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -22,6 +23,7 @@ export const ProfileView = ({
   onUsernameChange,
   canChangeUsername
 }: ProfileViewProps) => {
+  const navigate = useNavigate();
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(username);
 
@@ -123,6 +125,7 @@ export const ProfileView = ({
           {/* Settings */}
           <Button
             variant="ghost"
+            onClick={() => navigate('/settings')}
             className="w-full flex items-center justify-center space-x-2 rounded-xl hover:bg-secondary"
           >
             <Settings size={20} />
