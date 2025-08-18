@@ -33,21 +33,47 @@ export const usePosts = () => {
 
     setIsLoading(true);
     try {
+      // Get current user's profile to filter posts correctly
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('college_id, department_id')
+        .eq('user_id', user.id)
+        .single();
+
+      if (!profile) {
+        setIsLoading(false);
+        return;
+      }
+
+      // Fetch posts based on visibility rules:
+      // 1. College-wide posts from same college
+      // 2. Department-specific posts from same department
       const { data, error } = await supabase
         .from('posts')
         .select(`
           *,
           departments(name)
         `)
+        .or(`and(is_college_wide.eq.true,college_id.eq.${profile.college_id}),and(is_college_wide.eq.false,department_id.eq.${profile.department_id})`)
         .order('created_at', { ascending: false });
 
       if (error) throw error;
+
+      // Check which posts user has liked
+      const postIds = data?.map(post => post.id) || [];
+      const { data: likes } = await supabase
+        .from('post_likes')
+        .select('post_id')
+        .eq('user_id', user.id)
+        .in('post_id', postIds);
+
+      const likedPostIds = new Set(likes?.map(like => like.post_id) || []);
 
       const postsWithLikes = data?.map(post => ({
         ...post,
         anonymous_name: 'Anonymous',
         department_name: post.departments?.name || 'Unknown Department',
-        isLiked: false,
+        isLiked: likedPostIds.has(post.id),
       })) || [];
 
       setPosts(postsWithLikes);

@@ -49,7 +49,11 @@ export const AuthProvider = ({ children }: AuthProviderProps) => {
   }, []);
 
   const signOut = async () => {
+    setLoading(true);
     await supabase.auth.signOut();
+    setUser(null);
+    setSession(null);
+    setLoading(false);
     // Force navigation to auth page
     window.location.href = '/auth';
   };

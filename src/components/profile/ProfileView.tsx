@@ -6,6 +6,8 @@ import { Input } from "@/components/ui/input";
 import { User, Edit3, Settings, Heart, MessageSquare, Camera } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { useProfile } from "@/hooks/useProfile";
+import { usePosts } from "@/hooks/usePosts";
+import { useAuth } from "@/contexts/AuthContext";
 
 interface ProfileViewProps {
   username: string;
@@ -25,10 +27,17 @@ export const ProfileView = ({
   canChangeUsername
 }: ProfileViewProps) => {
   const navigate = useNavigate();
+  const { user } = useAuth();
   const { profile, updateProfilePicture, isUploading } = useProfile();
+  const { posts } = usePosts();
   const [isEditing, setIsEditing] = useState(false);
   const [newUsername, setNewUsername] = useState(username);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  
+  // Calculate real stats from posts
+  const userPosts = posts.filter(p => p.user_id === user?.id);
+  const realPostsCount = userPosts.length;
+  const realLikesCount = userPosts.reduce((sum, p) => sum + p.likes_count, 0);
 
   const handleSave = () => {
     if (newUsername.trim() && newUsername !== username) {
@@ -54,8 +63,8 @@ export const ProfileView = ({
   };
 
   const stats = [
-    { icon: MessageSquare, label: "Posts", value: postsCount, color: "text-blue-400" },
-    { icon: Heart, label: "Likes", value: likesCount, color: "text-red-400" },
+    { icon: MessageSquare, label: "Posts", value: realPostsCount, color: "text-blue-400" },
+    { icon: Heart, label: "Likes", value: realLikesCount, color: "text-red-400" },
     { icon: MessageSquare, label: "Comments", value: commentsCount, color: "text-green-400" },
   ];
 
