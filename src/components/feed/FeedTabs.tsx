@@ -7,14 +7,18 @@ import { cn } from "@/lib/utils";
 interface Post {
   id: string;
   content: string;
-  author: string;
-  timeAgo: string;
-  likes: number;
-  comments: number;
-  isLiked: boolean;
-  image?: string;
   images?: string[];
-  department?: string;
+  user_id: string;
+  department_id?: string;
+  college_id?: string;
+  is_college_wide: boolean;
+  likes_count: number;
+  comments_count: number;
+  created_at: string;
+  updated_at: string;
+  anonymous_name?: string;
+  department_name?: string;
+  isLiked?: boolean;
 }
 
 interface FeedTabsProps {
@@ -36,7 +40,7 @@ export const FeedTabs = ({
   const [current, setCurrent] = useState(0);
   
   const departmentPosts = posts.filter(post => 
-    post.department === userDepartment
+    post.department_id === userDepartment
   );
 
   useEffect(() => {
@@ -105,17 +109,24 @@ export const FeedTabs = ({
           {tabs.map((tab) => (
             <CarouselItem key={tab.id}>
               <div className="pb-20">
-                {tab.posts.length > 0 ? (
-                  tab.posts.map((post) => (
-                    <PostCard
-                      key={post.id}
-                      {...post}
-                      onLike={onLike}
-                      onComment={onComment}
-                      onShare={onShare}
-                    />
-                  ))
-                ) : (
+                  {tab.posts.length > 0 ? (
+                    tab.posts.map((post) => (
+                      <PostCard
+                        key={post.id}
+                        id={post.id}
+                        content={post.content}
+                        author={post.anonymous_name || 'Anonymous'}
+                        timeAgo={new Date(post.created_at).toLocaleString()}
+                        likes={post.likes_count}
+                        comments={post.comments_count}
+                        isLiked={post.isLiked || false}
+                        images={post.images}
+                        onLike={onLike}
+                        onComment={onComment}
+                        onShare={onShare}
+                      />
+                    ))
+                  ) : (
                   <div className="text-center py-12 px-4">
                   <div className="w-16 h-16 bg-gradient-primary rounded-full flex items-center justify-center mx-auto mb-4 shadow-primary">
                     {(() => { const EmptyIcon = tab.icon; return <EmptyIcon size={24} className="text-white" />; })()}

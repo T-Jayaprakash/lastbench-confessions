@@ -8,10 +8,13 @@ import { cn } from "@/lib/utils";
 interface Comment {
   id: string;
   content: string;
-  author: string;
-  timeAgo: string;
-  likes: number;
-  isLiked: boolean;
+  user_id: string;
+  post_id: string;
+  likes_count: number;
+  created_at: string;
+  updated_at: string;
+  anonymous_name?: string;
+  isLiked?: boolean;
 }
 
 interface CommentsModalProps {
@@ -71,13 +74,13 @@ export const CommentsModal = ({
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 bg-gradient-primary rounded-full flex items-center justify-center shadow-primary flex-shrink-0">
                       <span className="text-white font-semibold text-xs">
-                        {comment.author.charAt(0).toUpperCase()}
+                        A
                       </span>
                     </div>
                     <div className="flex-1 min-w-0">
                       <div className="flex items-center space-x-2 mb-1">
-                        <span className="font-medium text-foreground text-sm">{comment.author}</span>
-                        <span className="text-muted-foreground text-xs">{comment.timeAgo}</span>
+                        <span className="font-medium text-foreground text-sm">{comment.anonymous_name || 'Anonymous'}</span>
+                        <span className="text-muted-foreground text-xs">{new Date(comment.created_at).toLocaleString()}</span>
                       </div>
                       <p className="text-foreground text-sm leading-relaxed">{comment.content}</p>
                       <div className="flex items-center space-x-4 mt-2">
@@ -96,7 +99,7 @@ export const CommentsModal = ({
                             size={14} 
                             className={cn(comment.isLiked && "fill-current")} 
                           />
-                          <span className="text-xs">{comment.likes}</span>
+                          <span className="text-xs">{comment.likes_count}</span>
                         </Button>
                       </div>
                     </div>
