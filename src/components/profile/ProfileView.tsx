@@ -52,12 +52,25 @@ export const ProfileView = ({
   };
 
   const handleProfilePictureClick = () => {
+    if (isUploading) return;
     fileInputRef.current?.click();
   };
 
   const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
+      // Validate file size (max 5MB)
+      if (file.size > 5 * 1024 * 1024) {
+        alert('File size must be less than 5MB');
+        return;
+      }
+      
+      // Validate file type
+      if (!file.type.startsWith('image/')) {
+        alert('Please select an image file');
+        return;
+      }
+      
       await updateProfilePicture(file);
     }
   };
@@ -86,14 +99,16 @@ export const ProfileView = ({
             ) : (
               <User size={32} className="text-white" />
             )}
-            <div className="absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center">
-              <Camera size={20} className="text-white" />
-            </div>
-            {isUploading && (
-              <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center">
+            <div className={cn(
+              "absolute inset-0 bg-black/50 rounded-full opacity-0 group-hover:opacity-100 transition-opacity flex items-center justify-center",
+              isUploading && "opacity-100"
+            )}>
+              {isUploading ? (
                 <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin" />
-              </div>
-            )}
+              ) : (
+                <Camera size={20} className="text-white" />
+              )}
+            </div>
           </div>
           <input
             ref={fileInputRef}
@@ -101,6 +116,7 @@ export const ProfileView = ({
             accept="image/*"
             onChange={handleFileChange}
             className="hidden"
+            disabled={isUploading}
           />
           
           <div className="space-y-2">

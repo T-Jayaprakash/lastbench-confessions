@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import { supabase } from '@/integrations/supabase/client';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { useImageUpload } from '@/hooks/useImageUpload';
 
 export interface Profile {
   id: string;
@@ -18,7 +17,7 @@ export interface Profile {
 export const useProfile = () => {
   const { user } = useAuth();
   const { toast } = useToast();
-  const { uploadImages, isUploading } = useImageUpload();
+  const [isUploading, setIsUploading] = useState(false);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -46,20 +45,33 @@ export const useProfile = () => {
   const updateProfilePicture = async (file: File) => {
     if (!user || !profile) return;
 
+    setIsUploading(true);
     try {
-      const imageUrls = await uploadImages([file], user.id);
-      if (imageUrls.length === 0) return;
+      const fileExt = file.name.split('.').pop();
+      const fileName = `${user.id}/profile.${fileExt}`;
+
+      const { error: uploadError } = await supabase.storage
+        .from('profile-pictures')
+        .upload(fileName, file, {
+          upsert: true
+        });
+
+      if (uploadError) throw uploadError;
+
+      const { data } = supabase.storage
+        .from('profile-pictures')
+        .getPublicUrl(fileName);
 
       const { error } = await supabase
         .from('profiles')
         .update({
-          profile_picture_url: imageUrls[0],
+          profile_picture_url: data.publicUrl,
         })
         .eq('user_id', user.id);
 
       if (error) throw error;
 
-      setProfile(prev => prev ? { ...prev, profile_picture_url: imageUrls[0] } : null);
+      setProfile(prev => prev ? { ...prev, profile_picture_url: data.publicUrl } : null);
 
       toast({
         title: "Profile picture updated!",
@@ -72,6 +84,8 @@ export const useProfile = () => {
         description: "Failed to update profile picture.",
         variant: "destructive",
       });
+    } finally {
+      setIsUploading(false);
     }
   };
 

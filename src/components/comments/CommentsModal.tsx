@@ -35,14 +35,23 @@ export const CommentsModal = ({
   onLikeComment
 }: CommentsModalProps) => {
   const [newComment, setNewComment] = useState("");
+  const [isSubmitting, setIsSubmitting] = useState(false);
 
-  const handleSubmit = () => {
+  const handleSubmit = async () => {
     if (newComment.trim()) {
-      onAddComment(postId, newComment);
+      setIsSubmitting(true);
+      await onAddComment(postId, newComment);
       setNewComment("");
+      setIsSubmitting(false);
     }
   };
 
+  const handleKeyPress = (e: React.KeyboardEvent) => {
+    if (e.key === 'Enter' && !e.shiftKey) {
+      e.preventDefault();
+      handleSubmit();
+    }
+  };
   if (!isOpen) return null;
 
   return (
@@ -130,17 +139,25 @@ export const CommentsModal = ({
                 placeholder="Add a comment..."
                 className="bg-background/50 border-border/50 focus:border-primary rounded-full px-4"
                 maxLength={200}
-                onKeyPress={(e) => e.key === 'Enter' && handleSubmit()}
+                onKeyPress={handleKeyPress}
+                disabled={isSubmitting}
               />
               <Button
                 onClick={handleSubmit}
-                disabled={!newComment.trim()}
+                disabled={!newComment.trim() || isSubmitting}
                 size="sm"
                 className="bg-gradient-primary hover:opacity-90 text-white p-2 rounded-full shadow-primary transition-bounce tap-effect disabled:opacity-50"
               >
-                <Send size={16} />
+                {isSubmitting ? (
+                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin" />
+                ) : (
+                  <Send size={16} />
+                )}
               </Button>
             </div>
+          </div>
+          <div className="text-right text-xs text-muted-foreground mt-1">
+            {newComment.length}/200
           </div>
         </div>
       </div>
